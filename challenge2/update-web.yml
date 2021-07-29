@@ -1,0 +1,35 @@
+- hosts: web
+  remote_user: root
+  become: true
+  tasks:
+    - name: update all packages
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: installed
+      
+    - name: Create index file and add text
+      shell: echo "Hello from the ansible challenge course" > /var/www/html/index.html
+      args:
+        executable: /bin/bash
+      notify:
+        - reload apache
+    
+    - name: fetch IP address of server
+      shell:
+        cmd: curl http://169.254.169.254/latest/meta-data/public-ipv4
+      register: ip
+    - debug: var=ip.stdout_lines
+
+  handlers:
+    - name: reload apache
+      service:
+        name: httpd
+        state: reloaded
+
+
+
